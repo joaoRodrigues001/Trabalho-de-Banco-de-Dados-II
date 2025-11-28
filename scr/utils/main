@@ -1,0 +1,161 @@
+from utils.splash_screen import splash_screen
+from conexion.passphrase.mongo_queries import MongoQueries  
+from controller.controller_Aluno import Controller_Aluno
+from controller.controller_Instrutores import Controller_Instrutor
+from controller.controller_treino import Controller_Treino
+from controller.controller_Detalhe_Treino import Controller_DetalheTreino
+from controller.controller_Plano import Controller_Plano
+from controller.controller_Contrato_Plano import Controller_ContratoPlano
+from controller.controller_Pagamentos import Controller_Pagamentos
+from controller.controller_Gerente import Controller_Gerente
+
+tela_inicial = splash_screen()
+mongo = MongoQueries()
+mongo.connect()
+
+ctrl_aluno = Controller_Aluno()
+ctrl_instrutor = Controller_Instrutor()
+ctrl_treino = Controller_Treino()
+ctrl_detalhe = Controller_DetalheTreino() 
+ctrl_plano = Controller_Plano()
+ctrl_contrato = Controller_ContratoPlano()
+ctrl_pagamento = Controller_Pagamentos()
+ctrl_gerente = Controller_Gerente()
+
+
+def relatorio_treinos_por_aluno():
+    """Mostra todos os treinos realizados por aluno"""
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "treino",
+                "localField": "matricula",
+                "foreignField": "matricula",
+                "as": "treinos"
+            }
+        },
+        {
+            "$unwind": "$treinos"
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "aluno": "$nome",
+                "nome_treino": "$treinos.nome_treino",
+                "musculo_alvo": "$treinos.musculo_alvo",
+                "objetivo": "$treinos.objetivo",
+                "duracao": "$treinos.duracao"
+            }
+        },
+        {
+            "$sort": {"aluno": 1, "nome_treino": 1}
+        }
+    ]
+    
+    df = mongo.aggregate_to_dataframe("alunos", pipeline)
+    print("\n📋 RELATÓRIO DE TREINOS POR ALUNO:\n")
+    print(df.to_string(index=False))
+    input("\nPressione ENTER para voltar ao menu...")
+
+def relatorio_receita_por_plano():
+    """Mostra o total recebido por tipo de plano"""
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "contrato_plano",
+                "localField": "id_plano",
+                "foreignField": "id_plano",
+                "as": "contratos"
+            }
+        },
+        {
+            "$unwind": "$contratos"
+        },
+        {
+            "$lookup": {
+                "from": "pagamentos",
+                "localField": "contratos.id_contrato",
+                "foreignField": "id_contrato",
+                "as": "pagamentos"
+            }
+        },
+        {
+            "$unwind": "$pagamentos"
+        },
+        {
+            "$group": {
+                "_id": "$tipo_plano",
+                "total_recebido": {"$sum": "$pagamentos.valor_pago"}
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "tipo_plano": "$_id",
+                "total_recebido": 1
+            }
+        },
+        {
+            "$sort": {"total_recebido": -1}
+        }
+    ]
+    
+    df = mongo.aggregate_to_dataframe("planos", pipeline)
+    print("\n💰 RELATÓRIO DE RECEITA POR PLANO:\n")
+    print(df.to_string(index=False))
+    input("\nPressione ENTER para voltar ao menu...")
+
+def inserir(opcao_inserir:int=0):
+    if opcao_inserir == 1:
+        ctrl_aluno.inserir_aluno()
+    elif opcao_inserir == 2:
+        ctrl_instrutor.inserir_instrutor()
+    elif opcao_inserir == 3:
+        ctrl_treino.inserir_treino()
+    elif opcao_inserir == 4:
+        ctrl_detalhe.inserir_detalhe_treino()
+    elif opcao_inserir == 5:
+        ctrl_plano.inserir_plano()
+    elif opcao_inserir == 6:
+        ctrl_contrato.inserir_contrato()
+    elif opcao_inserir == 7:
+        ctrl_pagamento.inserir_pagamento()
+    elif opcao_inserir == 8:
+        ctrl_gerente.inserir_gerente()
+
+def atualizar(opcao_atualizar:int=0):
+    if opcao_atualizar == 1:
+        ctrl_aluno.atualizar_aluno()
+    elif opcao_atualizar == 2:
+        ctrl_instrutor.atualizar_instrutor()
+    elif opcao_atualizar == 3:
+        ctrl_treino.atualizar_treino()
+    elif opcao_atualizar == 4:
+        ctrl_detalhe.atualizar_detalhe_treino()
+    elif opcao_atualizar == 5:
+        ctrl_plano.atualizar_plano()
+    elif opcao_atualizar == 6:
+        ctrl_contrato.atualizar_contrato()
+    elif opcao_atualizar == 7:
+        ctrl_pagamento.atualizar_pagamento()
+    elif opcao_atualizar == 8:
+        ctrl_gerente.atualizar_gerente()
+
+def excluir(opcao_excluir:int=0):
+    if opcao_excluir == 1:
+        ctrl_aluno.excluir_aluno()
+    elif opcao_excluir == 2:
+        ctrl_instrutor.excluir_instrutor()
+    elif opcao_excluir == 3:
+        ctrl_treino.excluir_treino()
+    elif opcao_excluir == 4:
+        ctrl_detalhe.excluir_detalhe_treino()
+    elif opcao_excluir == 5:
+        ctrl_plano.excluir_plano()
+    elif opcao_excluir == 6:
+        ctrl_contrato.excluir_contrato()
+    elif opcao_excluir == 7:
+        ctrl_pagamento.excluir_pagamento()
+    elif opcao_excluir == 8:
+        ctrl_gerente.excluir_gerente()
+        
