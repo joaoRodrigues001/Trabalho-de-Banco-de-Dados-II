@@ -1,0 +1,29 @@
+from conexion.passphrase.mongo_queries import MongoQueries
+
+mongo = MongoQueries(can_write=True)
+mongo.connect()
+
+# Teste de inserção
+print("Testando inserção...")
+test_doc = {"x": 7.1}
+mongo.insert_one("test_collection", test_doc)
+
+test_doc2 = {"x": 8.4}
+mongo.insert_one("test_collection", test_doc2)
+
+# Teste de consulta para DataFrame
+print("\nTestando consulta para DataFrame:")
+result = mongo.sqlToDataFrame("test_collection", {})
+print(result)
+
+# Teste de busca
+print("\nTestando busca de um documento:")
+result = mongo.find_one("test_collection", {"x": 7.1})
+print(result)
+
+# Limpeza
+print("\nLimpando collection de teste...")
+mongo.db["test_collection"].drop()
+
+print("\nTestes concluídos!")
+mongo.close()

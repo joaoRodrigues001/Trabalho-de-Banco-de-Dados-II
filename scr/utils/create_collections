@@ -1,0 +1,155 @@
+from conexion.passphrase.mongo_queries import MongoQueries
+import json
+
+def create_collections():
+    """
+    Cria as collections no MongoDB (se não existirem)
+    No MongoDB, collections são criadas automaticamente ao inserir documentos
+    """
+    mongo = MongoQueries(can_write=True)
+    mongo.connect()
+    
+    collections = [
+        "gerente",
+        "instrutores", 
+        "alunos",
+        "planos",
+        "contrato_plano",
+        "treino",
+        "detalhe_treino",
+        "pagamentos"
+    ]
+    
+    print("Criando collections...")
+    for col in collections:
+        # Cria a collection se não existir
+        if col not in mongo.db.list_collection_names():
+            mongo.db.create_collection(col)
+            print(f"Collection '{col}' criada com sucesso!")
+        else:
+            print(f"Collection '{col}' já existe.")
+    
+    mongo.close()
+    print("Collections verificadas/criadas com sucesso!")
+
+def generate_sample_records():
+    """
+    Gera registros de exemplo para as collections
+    """
+    mongo = MongoQueries(can_write=True)
+    mongo.connect()
+    
+    print("\nInserindo registros de exemplo...")
+    
+    # Gerentes
+    gerentes = [
+        {"id_gerente": 1, "nome": "Carlos Silva", "telefone": "11987654321", 
+         "email": "carlos@academia.com", "senha": "1234", "salario": 5000.00},
+        {"id_gerente": 2, "nome": "Ana Santos", "telefone": "11987654322", 
+         "email": "ana@academia.com", "senha": "5678", "salario": 4800.00}
+    ]
+    
+    # Instrutores
+    instrutores = [
+        {"id_instrutores": 1, "id_gerente": 1, "nome": "João Oliveira", 
+         "cpf": "12345678901", "email": "joao@academia.com", 
+         "telefone": "11987654323", "cref": "123456", "salario": 3500.00},
+        {"id_instrutores": 2, "id_gerente": 1, "nome": "Maria Costa", 
+         "cpf": "98765432101", "email": "maria@academia.com", 
+         "telefone": "11987654324", "cref": "654321", "salario": 3800.00}
+    ]
+    
+    # Alunos
+    alunos = [
+        {"matricula": 1, "id_instrutores": 1, "id_gerente": 1, 
+         "nome": "Pedro Almeida", "email": "pedro@email.com", 
+         "cpf": "11122233344", "telefone": "11987654325", "status": 1},
+        {"matricula": 2, "id_instrutores": 2, "id_gerente": 1, 
+         "nome": "Julia Ferreira", "email": "julia@email.com", 
+         "cpf": "55566677788", "telefone": "11987654326", "status": 1}
+    ]
+    
+    # Planos
+    planos = [
+        {"id_plano": 1, "nome_plano": "Plano Básico", "valor": 99.90, "tipo_plano": "Mensal"},
+        {"id_plano": 2, "nome_plano": "Plano Premium", "valor": 149.90, "tipo_plano": "Mensal"},
+        {"id_plano": 3, "nome_plano": "Plano Anual", "valor": 999.00, "tipo_plano": "Anual"}
+    ]
+    
+    # Contratos
+    contratos = [
+        {"id_contrato": 1, "matricula": 1, "id_plano": 1, 
+         "data_inicio": "01/01/2024", "data_fim": "01/01/2025", "status": 1},
+        {"id_contrato": 2, "matricula": 2, "id_plano": 2, 
+         "data_inicio": "15/01/2024", "data_fim": "15/01/2025", "status": 1}
+    ]
+    
+    # Treinos
+    treinos = [
+        {"id_treino": 1, "matricula": 1, "nome_treino": "Treino A - Peito e Tríceps", 
+         "musculo_alvo": "Peitoral", "objetivo": "Hipertrofia", "duracao": 60},
+        {"id_treino": 2, "matricula": 1, "nome_treino": "Treino B - Costas e Bíceps", 
+         "musculo_alvo": "Dorsal", "objetivo": "Hipertrofia", "duracao": 60},
+        {"id_treino": 3, "matricula": 2, "nome_treino": "Treino C - Pernas", 
+         "musculo_alvo": "Quadríceps", "objetivo": "Força", "duracao": 75}
+    ]
+    
+    # Detalhes de Treino
+    detalhes = [
+        {"id_detalhe": 1, "id_instrutores": 1, "id_treino": 1, 
+         "series": 4, "repeticoes": 12, "instrucoes": "Foco na contração"},
+        {"id_detalhe": 2, "id_instrutores": 1, "id_treino": 2, 
+         "series": 4, "repeticoes": 10, "instrucoes": "Controlar a descida"},
+        {"id_detalhe": 3, "id_instrutores": 2, "id_treino": 3, 
+         "series": 5, "repeticoes": 8, "instrucoes": "Manter postura correta"}
+    ]
+    
+    # Pagamentos
+    pagamentos = [
+        {"id_pagamentos": 1, "matricula": 1, "id_contrato": 1, 
+         "data_pagamento": "05/01/2024", "valor_pago": 99.90, 
+         "metodo_pagamento": "Pix", "tipo_transacao": "Mensalidade"},
+        {"id_pagamentos": 2, "matricula": 2, "id_contrato": 2, 
+         "data_pagamento": "20/01/2024", "valor_pago": 149.90, 
+         "metodo_pagamento": "Cartão de Crédito", "tipo_transacao": "Mensalidade"}
+    ]
+    
+    # Inserir dados
+    try:
+        mongo.db["gerente"].insert_many(gerentes)
+        print("✓ Gerentes inseridos")
+        
+        mongo.db["instrutores"].insert_many(instrutores)
+        print("✓ Instrutores inseridos")
+        
+        mongo.db["alunos"].insert_many(alunos)
+        print("✓ Alunos inseridos")
+        
+        mongo.db["planos"].insert_many(planos)
+        print("✓ Planos inseridos")
+        
+        mongo.db["contrato_plano"].insert_many(contratos)
+        print("✓ Contratos inseridos")
+        
+        mongo.db["treino"].insert_many(treinos)
+        print("✓ Treinos inseridos")
+        
+        mongo.db["detalhe_treino"].insert_many(detalhes)
+        print("✓ Detalhes de treino inseridos")
+        
+        mongo.db["pagamentos"].insert_many(pagamentos)
+        print("✓ Pagamentos inseridos")
+        
+        print("\nTodos os registros foram inseridos com sucesso!")
+    except Exception as e:
+        print(f"Erro ao inserir registros: {e}")
+    
+    mongo.close()
+
+def run():
+    create_collections()
+    generate_sample_records()
+    print("\n✅ Banco de dados MongoDB configurado com sucesso!")
+
+if __name__ == '__main__':
+    run()

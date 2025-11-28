@@ -1,0 +1,23 @@
+from db import conectar
+
+def contar_registros():
+    try:
+        db = conectar()
+        collections = ["gerente", "instrutores", "alunos", "planos", "treino", "pagamentos"]
+        print("\n📊 Situação do Banco de Dados:")
+        for col in collections:
+            total = db[col].count_documents({})
+            print(f" - {col.upper():<15}: {total} registros")
+    except Exception as e:
+        print("Erro ao consultar o banco:", e)
+
+def splash_screen():
+    print("=" * 60)
+    print("🏋️‍♀️  SISTEMA DE ACADEMIA FIT - MongoDB  🏋️‍♂️")
+    print("Controle de Alunos, Treinos e Instrutores")
+    print("Professor: Howard Roatti  |  Disciplina: Banco de Dados")
+    print("Desenvolvido por: Guilherme B. Toniato, Murilo Reis, João Pedro Nascimento, Rafael Lucas, Gabriel França")
+    print("=" * 60)
+    contar_registros()
+    print("=" * 60)
+    return True
