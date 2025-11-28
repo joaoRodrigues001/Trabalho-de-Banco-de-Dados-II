@@ -1,0 +1,15 @@
+from pymongo import MongoClient
+
+def conectar():
+    try:
+        client = MongoClient(
+            host="localhost",
+            port=27017,
+            username="admin",
+            password="1234"
+        )
+        db = client["academia_db"]
+        return db
+    except Exception as e:
+        print("Erro ao conectar ao banco:", e)
+        return None
